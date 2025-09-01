@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Timestamp Notes",
+  "version": "1.0.0",
+  "description": "Take timestamped notes on YouTube videos and jump to those points from a lightweight panel.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
