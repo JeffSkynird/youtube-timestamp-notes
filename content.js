@@ -72,13 +72,13 @@
 
     const btn = document.createElement("button");
     btn.id = BTN_ID;
-    btn.className = "ytp-button";
+    btn.className = "ytp-button "
     btn.title = "Notas (Alt+N para agregar)";
     btn.setAttribute("aria-label", "Notas del video");
-    btn.style.width = "36px";
-    btn.style.height = "36px";
+    btn.style.width = "48px";
+    btn.style.height = "48px";
     btn.innerHTML = `
-      <svg viewBox="0 0 36 36" width="100%" height="100%" focusable="false" aria-hidden="true">
+      <svg viewBox="0 0 36 36" width="100%" height="100%" focusable="false" aria-hidden="true" style="align-self: center;">
         <g fill="currentColor">
           <rect x="10" y="8" width="16" height="20" rx="2" ry="2"></rect>
           <rect x="13" y="12" width="10" height="2" rx="1"></rect>
@@ -162,7 +162,7 @@
       }
       .item {
         display: grid; grid-template-columns: auto 1fr auto; gap: 8px;
-        align-items: start; padding: 6px 6px; border-radius: 8px;
+        align-items: center; padding: 6px 6px; border-radius: 8px;
       }
       .item:hover { background: rgba(255,255,255,0.06); }
       .item .ts {
@@ -182,6 +182,7 @@
         background: transparent; border: 0; color: #bbb; cursor: pointer; padding: 4px 6px; border-radius: 6px; white-space: nowrap;
       }
       .item .del:hover { background: rgba(255,255,255,0.08); color: #fff; }
+      .item.editing .del { display: none; }
       .muted { color: #aaa; font-size: 12px; padding: 6px 8px; }
     `;
     shadowRoot.appendChild(style);
@@ -233,8 +234,15 @@
       togglePanel(true); // ensure visible
     });
     shadowRoot.getElementById("save-note").addEventListener("click", () => saveNoteFromInput());
+
+    // Save from the top input when pressing Enter
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") saveNoteFromInput();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        saveNoteFromInput();
+      }
     });
 
     // Keep current time display in sync
@@ -266,6 +274,8 @@
   function enterEditMode(row, note) {
     let txt = row.querySelector(".txt");
     if (!txt) return;
+    // Mark row as editing to hide delete button
+    row.classList.add("editing");
     const created = note.created;
     const input = document.createElement("input");
     input.type = "text";
@@ -273,7 +283,11 @@
     input.value = note.text || "";
     input.placeholder = "Añade una nota…";
     // prevent YT shortcuts
-    const stop = (e) => { e.stopPropagation(); if (input){ /* keep typing */ } };
+    const stop = (e) => {
+      // Block YT shortcuts and prevent default actions when editing
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+    };
     ["keydown","keypress","keyup"].forEach(type => {
       input.addEventListener(type, stop, true);
       input.addEventListener(type, stop);
@@ -294,8 +308,18 @@
     };
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") save();
-      if (e.key === "Escape") cancel();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        save();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        cancel();
+      }
     });
     input.addEventListener("blur", save);
 
