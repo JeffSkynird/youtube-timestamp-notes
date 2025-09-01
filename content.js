@@ -72,13 +72,13 @@
 
     const btn = document.createElement("button");
     btn.id = BTN_ID;
-    btn.className = "ytp-button";
-    btn.title = "Notas (Alt+N para agregar)";
+    btn.className = "ytp-button "
+    btn.title = "Notes (Alt+N to add)";
     btn.setAttribute("aria-label", "Notas del video");
-    btn.style.width = "36px";
-    btn.style.height = "36px";
+    btn.style.width = "48px";
+    btn.style.height = "48px";
     btn.innerHTML = `
-      <svg viewBox="0 0 36 36" width="100%" height="100%" focusable="false" aria-hidden="true">
+      <svg viewBox="0 0 36 36" width="100%" height="100%" focusable="false" aria-hidden="true" style="align-self: center;">
         <g fill="currentColor">
           <rect x="10" y="8" width="16" height="20" rx="2" ry="2"></rect>
           <rect x="13" y="12" width="10" height="2" rx="1"></rect>
@@ -162,7 +162,7 @@
       }
       .item {
         display: grid; grid-template-columns: auto 1fr auto; gap: 8px;
-        align-items: start; padding: 6px 6px; border-radius: 8px;
+        align-items: center; padding: 6px 6px; border-radius: 8px;
       }
       .item:hover { background: rgba(255,255,255,0.06); }
       .item .ts {
@@ -182,6 +182,7 @@
         background: transparent; border: 0; color: #bbb; cursor: pointer; padding: 4px 6px; border-radius: 6px; white-space: nowrap;
       }
       .item .del:hover { background: rgba(255,255,255,0.08); color: #fff; }
+      .item.editing .del { display: none; }
       .muted { color: #aaa; font-size: 12px; padding: 6px 8px; }
     `;
     shadowRoot.appendChild(style);
@@ -190,15 +191,15 @@
     ui.className = "panel";
     ui.innerHTML = `
       <div class="hdr">
-        <div class="title">Notas del video</div>
+        <div class="title">Video Notes</div>
         <div class="spacer"></div>
-        <button id="add-now" title="Agregar marca (Alt+N)">+ Marca</button>
-        <button id="close" aria-label="Cerrar" title="Cerrar">×</button>
+        <button id="add-now" title="Add marker (Alt+N)">+ Marker</button>
+        <button id="close" aria-label="Close" title="Close">×</button>
       </div>
       <div class="adder">
         <div class="time" id="curr-time">00:00</div>
-        <input id="note-input" type="text" placeholder="Escribe una nota…">
-        <button class="btn" id="save-note">Guardar</button>
+        <input id="note-input" type="text" placeholder="Write a note…">
+        <button class="btn" id="save-note">Save</button>
       </div>
       <div class="list" id="notes-list"></div>
     `;
@@ -233,8 +234,15 @@
       togglePanel(true); // ensure visible
     });
     shadowRoot.getElementById("save-note").addEventListener("click", () => saveNoteFromInput());
+
+    // Save from the top input when pressing Enter
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") saveNoteFromInput();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        saveNoteFromInput();
+      }
     });
 
     // Keep current time display in sync
@@ -266,6 +274,8 @@
   function enterEditMode(row, note) {
     let txt = row.querySelector(".txt");
     if (!txt) return;
+    // Mark row as editing to hide delete button
+    row.classList.add("editing");
     const created = note.created;
     const input = document.createElement("input");
     input.type = "text";
@@ -273,7 +283,11 @@
     input.value = note.text || "";
     input.placeholder = "Añade una nota…";
     // prevent YT shortcuts
-    const stop = (e) => { e.stopPropagation(); if (input){ /* keep typing */ } };
+    const stop = (e) => {
+      // Block YT shortcuts and prevent default actions when editing
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+    };
     ["keydown","keypress","keyup"].forEach(type => {
       input.addEventListener(type, stop, true);
       input.addEventListener(type, stop);
@@ -294,8 +308,18 @@
     };
 
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") save();
-      if (e.key === "Escape") cancel();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        save();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+        cancel();
+      }
     });
     input.addEventListener("blur", save);
 
@@ -314,7 +338,7 @@
     const vid = currentVideoId || getVideoId();
     const notes = (await getNotes(vid)).slice().sort((a,b) => a.t - b.t);
     if (!notes.length) {
-      list.innerHTML = `<div class="muted">Sin notas todavía. Usa <b>Alt+N</b> para agregar una marca rápida o escribe una nota y presiona Guardar.</div>`;
+      list.innerHTML = `<div class="muted">No notes yet. Use <b>Alt+N</b> to add a quick marker or write a note and press Save.</div>`;
       return;
     }
     list.innerHTML = "";
@@ -326,19 +350,19 @@
       const tsBtn = document.createElement("div");
       tsBtn.className = "ts";
       tsBtn.textContent = formatTime(n.t);
-      tsBtn.title = "Saltar a " + formatTime(n.t);
+      tsBtn.title = "Go to " + formatTime(n.t);
       tsBtn.addEventListener("click", () => seekTo(n.t));
 
       const txt = document.createElement("div");
       txt.className = "txt" + ((n.text || "").trim() ? "" : " empty");
-      txt.textContent = (n.text || "").trim() || "— sin texto —";
-      txt.title = "Haz clic para editar";
+      txt.textContent = (n.text || "").trim() || "— no text —";
+      txt.title = "Click to edit";
       txt.addEventListener("click", () => enterEditMode(row, n));
 
       const del = document.createElement("button");
       del.className = "del";
       del.textContent = "✕";
-      del.title = "Eliminar";
+      del.title = "Delete";
       del.addEventListener("click", async () => {
         const all = await getNotes(vid);
         const filtered = all.filter(x => !(x.t === n.t && x.text === n.text && x.created === n.created));
