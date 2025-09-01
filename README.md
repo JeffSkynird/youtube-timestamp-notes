@@ -29,6 +29,13 @@ Simple extension to **take timestamped notes** on YouTube videos and **jump** to
 - Click the **body** of a note to edit.
 - **✕**: deletes the note.
 
+## Permissions: 
+- local extension storage
+
+## Privacy: 
+- local data only; 
+- no tracking, no external network or connections.
+
 ## Technical Details
 - Manifest V3, `content_script` at `document_idle`.
 - UI isolated with **Shadow DOM** attached to the player container (`#movie_player`).
@@ -36,7 +43,10 @@ Simple extension to **take timestamped notes** on YouTube videos and **jump** to
 - Detects YouTube SPA navigation via `yt-navigate-finish`, `yt-player-updated`, and `popstate` events.
 - Accesses the current time via `<video.html5-main-video>` (standard API).
 
-## Known Limitations (TODO)
-- Does not sync across devices.
-- Does not export/import notes.
-- No panel to view all notes for each video.
+## Roadmap
+- [ ] Sync notes across devices
+- [ ] Export/import notes
+- [ ] Add a panel to view all notes for each video
+- [ ] Improve the "Add" icon in YouTube controls
+- [ ] Adjust the edit input width
+- [ ] Support Enter key (keydown) to confirm add or edit
