@@ -3,6 +3,11 @@
 
 Simple extension to **take timestamped notes** on YouTube videos and **jump** to those points from a lightweight panel.
 
+## Preview
+
+![Preview 1](images/panel.png)
+![Preview 2](images/controls.png)
+
 ## What It Does
 - Inserts a button (notebook icon) into the player controls.
 - When clicked, a small panel appears over the video.

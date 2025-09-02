@@ -73,7 +73,7 @@
     const btn = document.createElement("button");
     btn.id = BTN_ID;
     btn.className = "ytp-button "
-    btn.title = "Notas (Alt+N para agregar)";
+    btn.title = "Notes (Alt+N to add)";
     btn.setAttribute("aria-label", "Notas del video");
     btn.style.width = "48px";
     btn.style.height = "48px";
@@ -191,15 +191,15 @@
     ui.className = "panel";
     ui.innerHTML = `
       <div class="hdr">
-        <div class="title">Notas del video</div>
+        <div class="title">Video Notes</div>
         <div class="spacer"></div>
-        <button id="add-now" title="Agregar marca (Alt+N)">+ Marca</button>
-        <button id="close" aria-label="Cerrar" title="Cerrar">×</button>
+        <button id="add-now" title="Add marker (Alt+N)">+ Marker</button>
+        <button id="close" aria-label="Close" title="Close">×</button>
       </div>
       <div class="adder">
         <div class="time" id="curr-time">00:00</div>
-        <input id="note-input" type="text" placeholder="Escribe una nota…">
-        <button class="btn" id="save-note">Guardar</button>
+        <input id="note-input" type="text" placeholder="Write a note…">
+        <button class="btn" id="save-note">Save</button>
       </div>
       <div class="list" id="notes-list"></div>
     `;
@@ -338,7 +338,7 @@
     const vid = currentVideoId || getVideoId();
     const notes = (await getNotes(vid)).slice().sort((a,b) => a.t - b.t);
     if (!notes.length) {
-      list.innerHTML = `<div class="muted">Sin notas todavía. Usa <b>Alt+N</b> para agregar una marca rápida o escribe una nota y presiona Guardar.</div>`;
+      list.innerHTML = `<div class="muted">No notes yet. Use <b>Alt+N</b> to add a quick marker or write a note and press Save.</div>`;
       return;
     }
     list.innerHTML = "";
@@ -350,19 +350,19 @@
       const tsBtn = document.createElement("div");
       tsBtn.className = "ts";
       tsBtn.textContent = formatTime(n.t);
-      tsBtn.title = "Saltar a " + formatTime(n.t);
+      tsBtn.title = "Go to " + formatTime(n.t);
       tsBtn.addEventListener("click", () => seekTo(n.t));
 
       const txt = document.createElement("div");
       txt.className = "txt" + ((n.text || "").trim() ? "" : " empty");
-      txt.textContent = (n.text || "").trim() || "— sin texto —";
-      txt.title = "Haz clic para editar";
+      txt.textContent = (n.text || "").trim() || "— no text —";
+      txt.title = "Click to edit";
       txt.addEventListener("click", () => enterEditMode(row, n));
 
       const del = document.createElement("button");
       del.className = "del";
       del.textContent = "✕";
-      del.title = "Eliminar";
+      del.title = "Delete";
       del.addEventListener("click", async () => {
         const all = await getNotes(vid);
         const filtered = all.filter(x => !(x.t === n.t && x.text === n.text && x.created === n.created));
