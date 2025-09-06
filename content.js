@@ -198,7 +198,7 @@
       </div>
       <div class="adder">
         <div class="time" id="curr-time">00:00</div>
-        <input id="note-input" type="text" placeholder="Write a note…">
+        <input id="note-input" type="text" placeholder="Write a note…" autocomplete="off"/>
         <button class="btn" id="save-note">Save</button>
       </div>
       <div class="list" id="notes-list"></div>
