@@ -192,9 +192,18 @@
     ui.innerHTML = `
       <div class="hdr">
         <div class="title">Video Notes</div>
+        <button id="clear-all" title="Delete all notes" aria-label="Delete all notes" style="display:none">🗑️</button>
         <div class="spacer"></div>
-        <button id="add-now" title="Add marker (Alt+N)">+ Marker</button>
-        <button id="close" aria-label="Close" title="Close">×</button>
+        <button id="add-now" title="Add marker (Alt+N)" aria-label="Add marker (Alt+N)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+        <button id="close" aria-label="Close" title="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6l-12 12"/>
+          </svg>
+        </button>
       </div>
       <div class="adder">
         <div class="time" id="curr-time">00:00</div>
@@ -229,6 +238,16 @@
     document.addEventListener("keyup", globalStopper, true);
 
     shadowRoot.getElementById("close").addEventListener("click", () => togglePanel(false));
+    shadowRoot.getElementById("clear-all").addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const vid = currentVideoId || getVideoId();
+      if (!vid) return;
+      const proceed = confirm("Delete all video notes?");
+      if (!proceed) return;
+      await setNotes(vid, []);
+      renderList();
+    });
     shadowRoot.getElementById("add-now").addEventListener("click", async () => {
       await quickAdd();
       togglePanel(true); // ensure visible
@@ -336,7 +355,10 @@
     const list = shadowRoot.getElementById("notes-list");
     if (!list) return;
     const vid = currentVideoId || getVideoId();
-    const notes = (await getNotes(vid)).slice().sort((a,b) => a.t - b.t);
+    const notes = (await getNotes(vid)).slice().sort((a,b) => b.t - a.t);
+    // toggle clear-all visibility based on count
+    const clearBtn = shadowRoot.getElementById("clear-all");
+    if (clearBtn) clearBtn.style.display = notes.length > 5 ? "" : "none";
     if (!notes.length) {
       list.innerHTML = `<div class="muted">No notes yet. Use <b>Alt+N</b> to add a quick marker or write a note and press Save.</div>`;
       return;
